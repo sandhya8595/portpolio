@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chat With Mom ❤️</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#ece5dd;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+#chatbox{
+width:380px;
+background:white;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+display:flex;
+flex-direction:column;
+}
+
+#header{
+background:#075e54;
+color:white;
+padding:15px;
+font-size:18px;
+border-radius:10px 10px 0 0;
+}
+
+#messages{
+height:350px;
+overflow-y:auto;
+padding:10px;
+display:flex;
+flex-direction:column;
+}
+
+.user{
+align-self:flex-end;
+background:#dcf8c6;
+padding:8px;
+margin:5px;
+border-radius:8px;
+max-width:70%;
+}
+
+.mom{
+align-self:flex-start;
+background:#f1f0f0;
+padding:8px;
+margin:5px;
+border-radius:8px;
+max-width:70%;
+}
+
+#inputArea{
+display:flex;
+border-top:1px solid #ccc;
+}
+
+#userInput{
+flex:1;
+padding:10px;
+border:none;
+outline:none;
+font-size:14px;
+}
+
+button{
+background:#25d366;
+border:none;
+padding:10px 15px;
+cursor:pointer;
+color:white;
+font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="chatbox">
+
+<div id="header">Mom(fatty) ❤️</div>
+
+<div id="messages"></div>
+
+<div id="inputArea">
+<input id="userInput" placeholder="Message Mom...">
+<button onclick="sendMessage()">Send</button>
+</div>
+
+</div>
+
+<script>
+
+const API_KEY = "AIzaSyBdm_omBEb99Dm9WXPjA0Jh1kg3NlbZcSc";
+
+const SYSTEM_PROMPT =
+"You are a loving mother. Talk to your child with warmth, care, and kindness like a real mom.";
+
+async function sendMessage(){
+
+const input = document.getElementById("userInput");
+const message = input.value.trim();
+
+if(message === "") return;
+
+const messagesDiv = document.getElementById("messages");
+
+messagesDiv.innerHTML += `<div class="user">${message}</div>`;
+
+input.value = "";
+
+messagesDiv.innerHTML += `<div class="mom" id="typing">Mom is typing...</div>`;
+
+messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+try{
+
+const response = await fetch(
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+contents:[
+{
+parts:[
+{ text: SYSTEM_PROMPT + "\nChild: " + message }
+]
+}
+]
+})
+}
+);
+
+const data = await response.json();
+
+document.getElementById("typing").remove();
+
+const reply =
+data.candidates?.[0]?.content?.parts?.[0]?.text || "Mom didn't reply.";
+
+messagesDiv.innerHTML += `<div class="mom">${reply}</div>`;
+
+messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+}catch(error){
+
+document.getElementById("typing").remove();
+
+messagesDiv.innerHTML += `<div class="mom">Mom is offline 😢</div>`;
+
+console.error(error);
+
+}
+
+}
+
+document.getElementById("userInput").addEventListener("keypress",function(e){
+if(e.key === "Enter"){
+sendMessage();
+}
+});
+
+</script>
+
+</body>
+</html>
